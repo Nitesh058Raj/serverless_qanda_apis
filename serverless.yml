@@ -1,0 +1,80 @@
+service: qanda-dynamodb
+frameworkVersion: '3'
+
+custom:
+  tableName: 'qanda-data-${sls:stage}'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-south-1
+  stage: dev
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action: "dynamodb:*"
+          Resource: "*"
+
+  environment:
+    QUESTION_TABLE: ${self:custom.tableName}
+
+
+functions:
+  getquestion:
+    handler: handler.getquestion
+    events:
+      - http:
+          path: question/{Qid}
+          method: get
+          cors: true
+
+  createquestion:
+    handler: handler.createquestion
+    events:
+      - http:
+          path: /questions
+          method: post
+          cors: true
+
+  allquestions:
+    handler: handler.allquestions
+    events:
+      - http:
+          path: /all
+          method: get
+          cors: true
+
+  answerquestion:
+    handler: handler.answerquestion
+    events:
+      - http:
+          path: answerquestion/{Qid}
+          method: post
+          cors: true
+
+resources:
+  - Resources:
+      QuestionTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+          AttributeDefinitions:
+            - AttributeName: Qid
+              AttributeType: S
+          KeySchema:
+            - AttributeName: Qid
+              KeyType: HASH
+          BillingMode: PAY_PER_REQUEST
+          TableName: ${self:custom.tableName}
+  - Resources:
+      GatewayResponseDefault4XX:
+        Type: 'AWS::ApiGateway::GatewayResponse'
+        Properties:
+          ResponseParameters:
+            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+            gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          ResponseType: DEFAULT_4XX
+          RestApiId:
+            Ref: 'ApiGatewayRestApi'
+
+  
