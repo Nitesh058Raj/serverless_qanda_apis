@@ -3,6 +3,7 @@ frameworkVersion: '3'
 
 custom:
   tableName: 'qanda-data-${sls:stage}'
+  tableName2: 'qanda-user-data-${sls:stage}'
 
 provider:
   name: aws
@@ -15,9 +16,13 @@ provider:
         - Effect: "Allow"
           Action: "dynamodb:*"
           Resource: "*"
+        - Effect: Allow
+          Action: "ses:*"
+          Resource: "*"
 
   environment:
     QUESTION_TABLE: ${self:custom.tableName}
+    MAIL_TABLE: ${self:custom.tableName2}
 
 
 functions:
@@ -66,6 +71,18 @@ resources:
               KeyType: HASH
           BillingMode: PAY_PER_REQUEST
           TableName: ${self:custom.tableName}
+  - Resources:
+      MailTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+          AttributeDefinitions:
+            - AttributeName: Qid
+              AttributeType: S
+          KeySchema:
+            - AttributeName: Qid
+              KeyType: HASH
+          BillingMode: PAY_PER_REQUEST
+          TableName: ${self:custom.tableName2}
   - Resources:
       GatewayResponseDefault4XX:
         Type: 'AWS::ApiGateway::GatewayResponse'
