@@ -172,10 +172,10 @@ module.exports.answerquestion = (event, context, callback) => {
     `;
    
     // sending mail id <-- verified at aws ses <-- you need to verifed it first
-    const from = "nit.pc058@gmail.com";
+    const from = "abc@gmail.com";
     const param_ses = {
       Destination: {
-        ToAddresses: ["nitpc.strat@gmail.com"],//mail from table => [result.Mail],
+        ToAddresses: [result.Mail],//mail from table // for testing use one define mail ["cba@gmail.com"]
       },
       Message: {
         Body: {
